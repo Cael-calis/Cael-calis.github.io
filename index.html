@@ -2056,6 +2056,71 @@ function restoreBmiInputs(){
 }
 
 // ── AI MEAL PLAN ──────────────────────────────────────────────────────────
+// ── OFFLINE MEAL PLAN GENERATOR ──────────────────────────────────────────
+function generateOfflineMealPlan(targetKcal, goalMode, gender, weight) {
+  const protein = Math.round(weight * (goalMode==='bulk' ? 2.2 : goalMode==='cut' ? 2.0 : 1.8));
+  const goalLabel = {cut:'ลดไขมัน',maintain:'คงน้ำหนัก',bulk:'เพิ่มกล้าม'}[goalMode];
+
+  const MEAL_SETS = {
+    cut: [
+      { breakfast: {emoji:'🌅',items:['ไข่ต้ม 3 ฟอง','ข้าวโอ๊ต 1/2 ถ้วย + น้ำเปล่า','กล้วยหอม 1 ลูก'],kcal:Math.round(targetKcal*0.22),tip:'กินโปรตีนก่อน ช่วยอิ่มนาน'},
+        lunch: {emoji:'☀️',items:['อกไก่ย่าง 150g','ข้าวกล้อง 1 ทัพพี','ผักลวก (บร็อคโคลี่+แครอท)'],kcal:Math.round(targetKcal*0.30)},
+        dinner: {emoji:'🌙',items:['ปลานึ่งซีอิ๊ว 150g','ข้าวกล้อง 1/2 ทัพพี','ต้มจืดเต้าหู้ผักรวม'],kcal:Math.round(targetKcal*0.28)},
+        snack: {emoji:'💪',items:['โยเกิร์ตกรีก plain 1 ถ้วย','โปรตีนเชค 1 สกูป (หลังฝึก)'],kcal:Math.round(targetKcal*0.20)}},
+      { breakfast: {emoji:'🌅',items:['ไข่เจียวไข่ขาว 3 ฟอง','ขนมปังโฮลวีท 2 แผ่น','แอปเปิ้ล 1 ลูก'],kcal:Math.round(targetKcal*0.22),tip:'ไม่ข้ามมื้อเช้า ช่วยเผาผลาญดีขึ้น'},
+        lunch: {emoji:'☀️',items:['ส้มตำ + ไก่ย่าง 150g','ข้าวเหนียว 1/2 ปั้น'],kcal:Math.round(targetKcal*0.30)},
+        dinner: {emoji:'🌙',items:['กุ้งต้ม 200g','ข้าวกล้อง 1/2 ทัพพี','แกงจืดเต้าหู้ไข่'],kcal:Math.round(targetKcal*0.28)},
+        snack: {emoji:'💪',items:['ไข่ต้ม 2 ฟอง','นมไขมันต่ำ 1 แก้ว (หลังฝึก)'],kcal:Math.round(targetKcal*0.20)}},
+    ],
+    maintain: [
+      { breakfast: {emoji:'🌅',items:['ข้าวโอ๊ต 1 ถ้วย + กล้วย + นม','ไข่ต้ม 2 ฟอง'],kcal:Math.round(targetKcal*0.25),tip:'กินคาร์บเช้าเพื่อพลังงานทั้งวัน'},
+        lunch: {emoji:'☀️',items:['ข้าวกะเพราไก่ (น้ำมันน้อย)','ไข่ดาว 1 ฟอง','ผักจิ้มน้ำพริก'],kcal:Math.round(targetKcal*0.32)},
+        dinner: {emoji:'🌙',items:['ข้าวกล้อง 1 ทัพพี','แซลมอนย่าง 120g','สลัดผักรวม'],kcal:Math.round(targetKcal*0.28)},
+        snack: {emoji:'💪',items:['กล้วยหอม 1 ลูก + โปรตีนเชค','ถั่วลิสง 30g'],kcal:Math.round(targetKcal*0.15)}},
+    ],
+    bulk: [
+      { breakfast: {emoji:'🌅',items:['ข้าวโอ๊ต 1.5 ถ้วย + นม + กล้วย 2 ลูก','ไข่ต้ม 3 ฟอง','ถั่วลิสง 30g'],kcal:Math.round(targetKcal*0.28),tip:'กินให้ครบมื้อเช้า เป็นพลังงานฝึก'},
+        lunch: {emoji:'☀️',items:['ข้าวสวย 2 ทัพพี','อกไก่ต้ม 200g','ผัดผักรวมน้ำมันมะกอก'],kcal:Math.round(targetKcal*0.32)},
+        dinner: {emoji:'🌙',items:['ข้าวกล้อง 2 ทัพพี','หมูย่าง 150g','ต้มยำกุ้ง 1 ชาม'],kcal:Math.round(targetKcal*0.28)},
+        snack: {emoji:'💪',items:['โปรตีนเชค 2 สกูป + นม (หลังฝึก)','ข้าวโอ๊ต + กล้วย ก่อนนอน'],kcal:Math.round(targetKcal*0.22)}},
+    ],
+  };
+
+  const sets = MEAL_SETS[goalMode] || MEAL_SETS.maintain;
+  const chosen = sets[Math.floor(Math.random()*sets.length)];
+
+  const drinks = goalMode==='cut'
+    ? ['น้ำเปล่า 3 ลิตร/วัน','ชาเขียวไม่หวาน (ก่อนฝึก)','น้ำมะนาวไม่หวาน']
+    : goalMode==='bulk'
+    ? ['น้ำเปล่า 3–4 ลิตร/วัน','นมไขมันต่ำหลังฝึก','น้ำมะพร้าวหลังเหงื่อออกมาก']
+    : ['น้ำเปล่า 2.5–3 ลิตร/วัน','ชาเขียวไม่หวาน','กาแฟดำ (ก่อนฝึก ไม่เกิน 1 แก้ว)'];
+
+  const tips = {
+    cut: `โปรตีนเป้า ${protein}g/วัน — กินทุก 3–4 ชั่วโมง ช่วยรักษากล้ามขณะลดไขมัน`,
+    maintain: `โปรตีนเป้า ${protein}g/วัน — กินคาร์บก่อนฝึก โปรตีนหลังฝึกภายใน 30 นาที`,
+    bulk: `โปรตีนเป้า ${protein}g/วัน — แคลอรี่เกินดุลเล็กน้อย เน้น whole food ไม่ใช่ junk`,
+  };
+
+  const summaries = {
+    cut: `แผนลดไขมัน ${targetKcal} kcal เน้นโปรตีนสูง คาร์บต่ำ รักษากล้ามเนื้อ`,
+    maintain: `แผนคงรูป ${targetKcal} kcal สมดุลสารอาหาร เหมาะออกกำลังกาย Calisthenics`,
+    bulk: `แผนเพิ่มกล้าม ${targetKcal} kcal แคลอรี่ส่วนเกิน โปรตีนสูง พลังงานเต็ม`,
+  };
+
+  return {
+    summary: summaries[goalMode],
+    targetKcal,
+    meals: [
+      {...chosen.breakfast, time:'มื้อเช้า'},
+      {...chosen.lunch, time:'มื้อกลางวัน'},
+      {...chosen.dinner, time:'มื้อเย็น'},
+      {...chosen.snack, time:'ของว่าง / หลังฝึก'},
+    ],
+    drinks,
+    tip: tips[goalMode],
+  };
+}
+
 async function generateMealPlan() {
   const resultDiv = document.getElementById('ai-meal-result');
   const btn = document.getElementById('ai-meal-btn');
@@ -2082,50 +2147,11 @@ async function generateMealPlan() {
   btn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite">⟳</span> กำลังสร้างแผน...';
   btn.disabled = true;
   resultDiv.style.display = 'block';
-  resultDiv.innerHTML = `<div style="background:rgba(155,126,248,0.06);border:1px solid rgba(155,126,248,0.15);border-radius:var(--r);padding:20px;text-align:center"><div style="color:var(--purple);font-size:0.85rem;margin-bottom:8px">✦ AI กำลังวางแผนเมนูให้คุณ...</div><div style="color:var(--muted);font-size:0.75rem">ประมวลผลจากข้อมูล BMI + TDEE ของคุณ</div></div>`;
+  resultDiv.innerHTML = `<div style="background:rgba(155,126,248,0.06);border:1px solid rgba(155,126,248,0.15);border-radius:var(--r);padding:20px;text-align:center"><div style="color:var(--purple);font-size:0.85rem;margin-bottom:8px">✦ กำลังวางแผนเมนูให้คุณ...</div><div style="color:var(--muted);font-size:0.75rem">ประมวลผลจากข้อมูล BMI + TDEE ของคุณ</div></div>`;
 
-  const prompt = `คุณเป็นนักโภชนาการผู้เชี่ยวชาญ วางแผนอาหารสำหรับนักออกกำลังกาย Calisthenics ชาวไทย
-ข้อมูล:
-- เพศ: ${gender} อายุ ${age} ปี
-- น้ำหนัก: ${w} kg ส่วนสูง: ${h} cm BMI: ${bmi}
-- TDEE: ${tdee} kcal/วัน
-- เป้าหมาย: ${goalLabel} (เป้าแคลอรี่วันนี้: ${targetKcal} kcal)${name ? '\n- ชื่อ: ' + name : ''}
-
-วางแผนเมนูอาหารทั้งวัน (วันนี้) แบบอาหารไทย/คลีน โดย:
-1. แบ่งเป็น มื้อเช้า มื้อกลางวัน มื้อเย็น และของว่าง/หลังออกกำลังกาย
-2. ระบุชื่อเมนูที่ชัดเจน + ปริมาณ
-3. ประมาณแคลอรี่แต่ละมื้อ และรวมทั้งวัน ให้ใกล้เคียง ${targetKcal} kcal
-4. แนะนำน้ำดื่มที่เหมาะสม
-5. มีเคล็ดลับสั้นๆ 1 ข้อ
-
-ตอบเป็นภาษาไทย ใช้ format JSON ดังนี้:
-{
-  "summary": "ประโยคสรุปแผนสั้นๆ 1 ประโยค",
-  "targetKcal": ${targetKcal},
-  "meals": [
-    {"time":"มื้อเช้า","emoji":"🌅","items":["เมนู 1 (ปริมาณ)","เมนู 2"],"kcal":500,"tip":"เคล็ดลับ"},
-    {"time":"มื้อกลางวัน","emoji":"☀️","items":["..."],"kcal":600},
-    {"time":"มื้อเย็น","emoji":"🌙","items":["..."],"kcal":500},
-    {"time":"ของว่าง/หลังฝึก","emoji":"💪","items":["..."],"kcal":300}
-  ],
-  "drinks": ["น้ำแนะนำ 1","น้ำแนะนำ 2","น้ำแนะนำ 3"],
-  "tip": "เคล็ดลับสำคัญวันนี้"
-}
-ตอบเป็น JSON ล้วนๆ ไม่มี markdown`;
-
+  setTimeout(() => {
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await res.json();
-    const raw = data.content.map(c => c.text || '').join('').replace(/```json|```/g,'').trim();
-    const plan = JSON.parse(raw);
+    const plan = generateOfflineMealPlan(targetKcal, goalMode, bmiGender, parseFloat(w));
 
     const totalKcal = plan.meals.reduce((s,m) => s+(m.kcal||0), 0);
     const mealColors = ['#e8b96a','#3fbfb8','#9b7ef8','#3dab72'];
@@ -2179,6 +2205,7 @@ async function generateMealPlan() {
     btn.innerHTML = '<span style="font-size:1rem">✦</span> แนะนำเมนูวันนี้ด้วย AI';
     btn.disabled = false;
   }
+  }, 600);
 }
 
 // ── CLEAN FOOD DATA ───────────────────────────────────────────────────────
